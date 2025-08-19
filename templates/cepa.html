@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Vinos de {{ cepa_actual }}{% endblock %}
+
+{% block content %}
+    <div class="jumbotron text-center bg-light p-5 rounded-3">
+        <h1 class="display-4">Vinos de la cepa {{ cepa_actual }}</h1>
+        <hr class="my-4">
+        <p class="lead">{{ descripcion_cepa }}</p>
+    </div>
+    <div class="row mt-5">
+        {% for vino in vinos %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 custom-card shadow">
+                <img src="{{ vino.foto_url }}" class="card-img-top" alt="{{ vino.nombre }}">
+                <div class="card-body d-flex flex-column text-center">
+                    <h5 class="card-title">{{ vino.nombre }}</h5>
+                    <p class="card-text"><strong>Cepa:</strong> {{ vino.cepa }}</p>
+                    <a href="#" class="btn btn-primary mt-auto">Ver Detalles</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

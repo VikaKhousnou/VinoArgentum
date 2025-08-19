@@ -3,14 +3,52 @@
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
-    <h1 class="text-center">¡Bienvenido a mi blog de Vinos Argentinos!</h1>
-    <p>
-        Mi nombre es Victoria y soy una amante de vinos como la mayoria de ustedes que por algo entraron a mi blog.
-        No se si les pasa pero..cuando van a comprar una botella de vino al "Chino", bodega, vinoteca o supermercado no buscan reseñas de ese vino en internet?
-        Porque yo si! Lo que me ayuda a hacer una buena elección a la hora de hacer la compra ya que para mi no es solo eso, tomar y hacer eleccion del vino justo es todo una EXPERIENCIA 
-        olfativa, visual y culinaria si lo maridamos. Todo esto me llevo a crear este blog que espero que atravez de mis posteos 
-        pueda ser de utilidad para aquel amante de vinos que me este leyendo ahora. Brindemos por eso!!🍷  
-    </p>
+    <h1 class="text-center font-effect-fire mb-4" style="font-family: 'Sofia', sans-serif;">¡Bienvenido a mi blog VinoArgentum!</h1>
+    
+    <div class="row align-items-center mb-5">
+        
+        <div class="col-md-6">
+        <p>
+            Mi nombre es Victoria y soy una amante de vinos como la mayoria de ustedes que por algo entraron a mi blog.
+            No se si les pasa pero..cuando van a comprar una botella de vino al "Chino", bodega, vinoteca o supermercado no buscan reseñas de ese vino en internet?
+            Porque yo si! Lo que me ayuda a hacer una buena elección a la hora de hacer la compra ya que para mi no es solo eso, tomar y hacer eleccion del vino justo es todo una EXPERIENCIA
+            olfativa, visual y culinaria si lo maridamos. Todo esto me llevo a crear este blog que espero que atravez de mis posteos
+            pueda ser de utilidad para aquel amante de vinos que me este leyendo ahora. Brindemos por eso!!🍷
+        </p>
+        
+        </div>
+
+        <div class="col-md-6">
+            <div id="carouselInicio" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#carouselInicio" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#carouselInicio" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#carouselInicio" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                </div>
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="{{ url_for('static', filename='images/principal.webp') }}" class="d-block w-100 rounded shadow-sm carousel-image-fixed-height" alt="Vino tinto en copa">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='images/imagen1.jpg') }}" class="d-block w-100 rounded shadow-sm carousel-image-fixed-height" alt="Botellas de vino en bodega">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='images/imagen2.jpg') }}" class="d-block w-100 rounded shadow-sm carousel-image-fixed-height" alt="Copas de vino brindando">
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselInicio" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Anterior</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselInicio" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Siguiente</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <hr>
+    
     <div class="row">
         {% for vino in vinos %}
         <div class="col-md-4 mb-4">

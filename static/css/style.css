@@ -1,0 +1,44 @@
+body {
+    background-color: #faae8d; /* Un fondo gris claro para que todo resalte */
+}
+
+.jumbotron {
+    background-color: #e9ecef; /* Un gris claro para el jumbotron */
+}
+
+.custom-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-card:hover {
+    transform: translateY(-8px); /* Levanta la tarjeta al pasar el mouse */
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important; /* Aumenta la sombra */
+}
+
+.bg-custom-wine {
+    background-color: #800020; /* Este es un color vino tinto. Puedes cambiarlo por el código que quieras. */
+}
+
+body {
+  font-family: "Sofia", sans-serif;
+  font-size: 20px;
+}
+
+p {
+    font-family: 'Open Sans', sans-serif;
+}
+
+.font-effect-fire {
+    color: #b7372d !important; /* Un tono rojo vibrante que simula el fuego. Puedes ajustarlo. */
+}
+
+/* Altura del contenedor del carrusel */
+#carouselInicio, .carousel-inner {
+    height: 500px; /* Puedes ajustar este valor a tu gusto */
+}
+
+/* Las imágenes dentro del carrusel */
+.carousel-image-fixed-height {
+    height: 1000%; /* La imagen toma el 100% de la altura de su contenedor */
+    object-fit: cover;
+}
