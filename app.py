@@ -1,11 +1,10 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for
 import psycopg2
 import os
 
 app = Flask(__name__)
 
 # Configuración de la conexión a la base de datos
-# Es buena práctica usar variables de entorno para datos sensibles como contraseñas
 DB_HOST = os.environ.get('DB_HOST', 'localhost')
 DB_NAME = os.environ.get('DB_NAME', 'vinos_db')
 DB_USER = os.environ.get('DB_USER', 'postgres')
@@ -25,53 +24,117 @@ def get_db_connection():
 
 def get_cepas():
     """
-    Obtiene la lista de todas las cepas únicas de la base de datos para el menú de navegación.
+    Obtiene la lista de todas las cepas únicas para el menú de navegación.
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT cepa FROM vinos ORDER BY cepa;")
-    cepas = [row[0] for row in cursor.fetchall()]
-    conn.close()
+    cepas = []
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT DISTINCT cepa FROM vinos ORDER BY cepa;")
+        cepas = [row[0] for row in cursor.fetchall()]
+    except (Exception, psycopg2.Error) as error:
+        print("Error al obtener las cepas:", error)
+    finally:
+        if conn:
+            conn.close()
     return cepas
+
+def get_cepa_descripcion(cepa_nombre):
+    """
+    Obtiene la descripción de una cepa desde la tabla 'cepas_info'.
+    """
+    descripcion = "No hay descripción disponible para esta cepa."
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT descripcion FROM cepas_info WHERE cepa_nombre = %s;", (cepa_nombre,))
+        result = cursor.fetchone()
+        if result:
+            descripcion = result[0]
+    except (Exception, psycopg2.Error) as error:
+        print("Error al obtener la descripción de la cepa:", error)
+    finally:
+        if conn:
+            conn.close()
+    return descripcion
 
 @app.route('/')
 def index():
     """
-    Ruta para la página principal del blog. Muestra todos los vinos.
+    Ruta para la página principal. Muestra todos los vinos.
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM vinos;")
-    vinos_db = cursor.fetchall()
-    conn.close()
-
-    # Obtener los nombres de las columnas para crear diccionarios
-    column_names = [desc[0] for desc in cursor.description]
-    # Convertir la lista de tuplas de la base de datos a una lista de diccionarios
-    # Esto hace más fácil acceder a los datos en la plantilla (ej: vino['nombre'])
-    vinos = [dict(zip(column_names, row)) for row in vinos_db]
+    vinos = []
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM vinos;")
+        vinos_db = cursor.fetchall()
+        column_names = [desc[0] for desc in cursor.description]
+        vinos = [dict(zip(column_names, row)) for row in vinos_db]
+    except (Exception, psycopg2.Error) as error:
+        print("Error al obtener los vinos:", error)
+    finally:
+        if conn:
+            conn.close()
     
-    # Renderiza la plantilla index.html y le pasa los datos de los vinos y las cepas
     return render_template('index.html', vinos=vinos, cepas=get_cepas())
 
 @app.route('/cepa/<cepa_elegida>')
 def mostrar_cepa(cepa_elegida):
     """
     Ruta para ver los vinos de una cepa específica.
-    El <cepa_elegida> en la URL se pasa como argumento a la función.
     """
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    # Usamos un marcador de posición (%s) para evitar inyecciones SQL
-    cursor.execute("SELECT * FROM vinos WHERE cepa = %s;", (cepa_elegida,))
-    vinos_db = cursor.fetchall()
-    conn.close()
+    vinos = []
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Usamos un marcador de posición (%s) para evitar inyecciones SQL
+        cursor.execute("SELECT * FROM vinos WHERE cepa = %s;", (cepa_elegida,))
+        vinos_db = cursor.fetchall()
+        column_names = [desc[0] for desc in cursor.description]
+        vinos = [dict(zip(column_names, row)) for row in vinos_db]
+    except (Exception, psycopg2.Error) as error:
+        print("Error al obtener los vinos de la cepa:", error)
+    finally:
+        if conn:
+            conn.close()
 
-    column_names = [desc[0] for desc in cursor.description]
-    vinos = [dict(zip(column_names, row)) for row in vinos_db]
+    # Obtener la descripción de la cepa
+    descripcion = get_cepa_descripcion(cepa_elegida)
+    
+    return render_template('cepa.html', vinos=vinos, cepa_actual=cepa_elegida, descripcion_cepa=descripcion, cepas=get_cepas())
 
-    # Renderiza la plantilla cepa.html, pasando los vinos filtrados y la cepa actual
-    return render_template('cepa.html', vinos=vinos, cepa_actual=cepa_elegida, cepas=get_cepas())
+@app.route('/vino/<int:vino_id>')
+def ver_detalles_vino(vino_id):
+    """
+    Ruta para ver los detalles de un vino específico.
+    """
+    vino = None
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM vinos WHERE id = %s;", (vino_id,))
+        vino_db = cursor.fetchone()
+        
+        if vino_db:
+            column_names = [desc[0] for desc in cursor.description]
+            vino = dict(zip(column_names, vino_db))
+    except (Exception, psycopg2.Error) as error:
+        print("Error al obtener los detalles del vino:", error)
+    finally:
+        if conn:
+            conn.close()
+
+    if vino:
+        return render_template('vino.html', vino=vino, cepas=get_cepas())
+    else:
+        # En caso de no encontrar el vino, puedes redirigir a una página de error
+        return "Vino no encontrado", 404
 
 if __name__ == '__main__':
     # Para iniciar el servidor de desarrollo, se ejecuta este bloque

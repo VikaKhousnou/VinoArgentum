@@ -57,8 +57,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ vino.nombre }}</h5>
                     <p class="card-text">**Cepa:** {{ vino.cepa }}</p>
-                    <a href="#" class="btn btn-primary">Ver Detalles</a>
-                </div>
+                    <a href="{{ url_for('ver_detalles_vino', vino_id=vino.id) }}" class="btn btn-primary mt-auto">Ver Detalles</a>
             </div>
         </div>
         {% endfor %}
