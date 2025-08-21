@@ -1,4 +1,5 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, request, redirect
+
 import psycopg2
 import os
 
@@ -110,31 +111,62 @@ def mostrar_cepa(cepa_elegida):
 
 @app.route('/vino/<int:vino_id>')
 def ver_detalles_vino(vino_id):
-    """
-    Ruta para ver los detalles de un vino específico.
-    """
     vino = None
+    comentarios = []
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # 1. Obtener los detalles del vino
         cursor.execute("SELECT * FROM vinos WHERE id = %s;", (vino_id,))
         vino_db = cursor.fetchone()
         
         if vino_db:
             column_names = [desc[0] for desc in cursor.description]
             vino = dict(zip(column_names, vino_db))
+            
+            # 2. Obtener los comentarios para este vino
+            cursor.execute("SELECT autor, comentario, fecha FROM comentarios WHERE vino_id = %s ORDER BY fecha DESC;", (vino_id,))
+            comentarios_db = cursor.fetchall()
+            comentarios = [dict(zip(['autor', 'comentario', 'fecha'], row)) for row in comentarios_db]
+            
     except (Exception, psycopg2.Error) as error:
-        print("Error al obtener los detalles del vino:", error)
+        print("Error al obtener los detalles y comentarios del vino:", error)
     finally:
         if conn:
             conn.close()
 
     if vino:
-        return render_template('vino.html', vino=vino, cepas=get_cepas())
+        return render_template('vino.html', vino=vino, comentarios=comentarios, cepas=get_cepas())
     else:
-        # En caso de no encontrar el vino, puedes redirigir a una página de error
         return "Vino no encontrado", 404
+
+# --- Sección para manejar los comentarios ---
+
+@app.route('/agregar_comentario/<int:vino_id>', methods=['POST'])
+def agregar_comentario(vino_id):
+    if request.method == 'POST':
+        autor = request.form['autor']
+        comentario = request.form['comentario']
+        conn = None
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO comentarios (vino_id, autor, comentario) VALUES (%s, %s, %s);",
+                (vino_id, autor, comentario)
+            )
+            conn.commit()
+        except (Exception, psycopg2.Error) as error:
+            print("Error al insertar el comentario:", error)
+            conn.rollback()  # Revierte la transacción si hay un error
+        finally:
+            if conn:
+                conn.close()
+    
+    return redirect(url_for('ver_detalles_vino', vino_id=vino_id))
+
 
 if __name__ == '__main__':
     # Para iniciar el servidor de desarrollo, se ejecuta este bloque
